@@ -28,7 +28,7 @@ jobs:
         run: npm run lint
 
       - name: Run tests
-        run: npm test -- --coverage
+        run: npm run test:coverage
 
       - name: Build frontend (Vite React)
         run: npm run build

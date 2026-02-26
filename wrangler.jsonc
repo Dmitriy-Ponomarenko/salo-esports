@@ -1,14 +1,28 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "salo-esports",
-  "compatibility_date": "2025-09-27",
-  "observability": {
-    "enabled": true
-  },
+  "name": "salo",
+  "account_id": "ae17de9c545c86193ee4a26cee0b2625",
+  "main": "workers/index.ts",
+  "compatibility_date": "2026-02-26",
   "assets": {
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true,
   },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
+  "observability": {
+    "enabled": true,
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "salo-esports",
+      "database_id": "64524a04-1db1-4deb-9ea9-201971be1b31",
+      "migrations_dir": "workers/db/migrations",
+    },
+  ],
+  "vars": {
+    "ACCESS_TOKEN_EXPIRES_IN": 3600,
+    "REFRESH_TOKEN_EXPIRES_IN": 604800,
+  },
 }
