@@ -1,52 +1,23 @@
-// eslint.config.js
-import { defineConfig, globalIgnores } from 'eslint/config'
-import tsPlugin from '@typescript-eslint/eslint-plugin'
-import reactPlugin from 'eslint-plugin-react'
-import reactHooksPlugin from 'eslint-plugin-react-hooks'
-import reactRefreshPlugin from 'eslint-plugin-react-refresh'
-import prettierPlugin from 'eslint-plugin-prettier'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import { globalIgnores } from 'eslint/config';
 
-export default defineConfig([
-  globalIgnores(['dist', 'node_modules']),
-
+export default tseslint.config([
+  globalIgnores(['dist']),
   {
-    files: ['**/*.{ts,tsx,js,jsx}'],
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs['recommended-latest'],
+      reactRefresh.configs.vite,
+    ],
     languageOptions: {
-      parser: '@typescript-eslint/parser',
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'module',
-        ecmaFeatures: { jsx: true },
-      },
-      globals: { browser: true, node: true },
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-      react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
-      'react-refresh': reactRefreshPlugin,
-      prettier: prettierPlugin,
-    },
-    rules: {
-      // TypeScript recommended rules (core subset)
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-empty-function': 'warn',
-      '@typescript-eslint/no-explicit-any': 'off',
-
-      // React recommended rules (core subset)
-      'react/jsx-uses-react': 'off',
-      'react/react-in-jsx-scope': 'off',
-      'react/jsx-uses-vars': 'error',
-
-      // React Hooks
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
-
-      // Prettier
-      'prettier/prettier': 'error',
-    },
-    settings: {
-      react: { version: 'detect' },
+      ecmaVersion: 2020,
+      globals: globals.browser,
     },
   },
-])
+]);
