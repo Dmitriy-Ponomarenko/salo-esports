@@ -38,7 +38,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.7.0",
     "redux-persist": "^6.0.0",
-    "swiper": "^11.2.10",
+    "swiper": "^12.1.2",
     "zod": "^3.25.76"
   },
   "devDependencies": {
