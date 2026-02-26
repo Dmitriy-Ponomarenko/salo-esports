@@ -1,45 +1,40 @@
 // eslint.config.js
 import { defineConfig, globalIgnores } from 'eslint/config';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import reactRefreshPlugin from 'eslint-plugin-react-refresh';
+import prettierPlugin from 'eslint-plugin-prettier';
+import prettierConfig from 'eslint-config-prettier';
 
 export default defineConfig([
   globalIgnores(['dist', 'node_modules']),
 
   {
     files: ['**/*.{ts,tsx,js,jsx}'],
-
-    extends: [
-      'eslint:recommended',
-      'plugin:@typescript-eslint/recommended',
-      'plugin:react/recommended',
-      'plugin:react-hooks/recommended',
-      'plugin:react-refresh/recommended',
-      'plugin:prettier/recommended',
-    ],
-
-    parser: '@typescript-eslint/parser',
-
-    parserOptions: {
-      ecmaVersion: 2020,
-      sourceType: 'module',
-      ecmaFeatures: {
-        jsx: true,
+    languageOptions: {
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'module',
+        ecmaFeatures: { jsx: true },
       },
+      globals: { browser: true, node: true },
     },
-
-    env: {
-      browser: true,
-      es2021: true,
-      node: true,
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      react: reactPlugin,
+      'react-hooks': reactHooksPlugin,
+      'react-refresh': reactRefreshPlugin,
+      prettier: prettierPlugin,
     },
-
-    plugins: [
-      '@typescript-eslint',
-      'react',
-      'react-hooks',
-      'react-refresh',
-      'prettier',
+    extends: [
+      tsPlugin.configs.recommended,
+      reactPlugin.configs.recommended,
+      reactHooksPlugin.configs.recommended,
+      reactRefreshPlugin.configs.vite,
+      prettierConfig,
     ],
-
     rules: {
       'prettier/prettier': 'error',
       'react/react-in-jsx-scope': 'off',
@@ -48,11 +43,8 @@ export default defineConfig([
         { argsIgnorePattern: '^_' },
       ],
     },
-
     settings: {
-      react: {
-        version: 'detect',
-      },
+      react: { version: 'detect' },
     },
   },
 ]);
