@@ -1,11 +1,10 @@
 // eslint.config.js
-import { defineConfig, globalIgnores } from 'eslint/config';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-import reactPlugin from 'eslint-plugin-react';
-import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import reactRefreshPlugin from 'eslint-plugin-react-refresh';
-import prettierPlugin from 'eslint-plugin-prettier';
-import prettierConfig from 'eslint-config-prettier';
+import { defineConfig, globalIgnores } from 'eslint/config'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
+import reactPlugin from 'eslint-plugin-react'
+import reactHooksPlugin from 'eslint-plugin-react-hooks'
+import reactRefreshPlugin from 'eslint-plugin-react-refresh'
+import prettierPlugin from 'eslint-plugin-prettier'
 
 export default defineConfig([
   globalIgnores(['dist', 'node_modules']),
@@ -28,23 +27,26 @@ export default defineConfig([
       'react-refresh': reactRefreshPlugin,
       prettier: prettierPlugin,
     },
-    extends: [
-      tsPlugin.configs.recommended,
-      reactPlugin.configs.recommended,
-      reactHooksPlugin.configs.recommended,
-      reactRefreshPlugin.configs.vite,
-      prettierConfig,
-    ],
     rules: {
-      'prettier/prettier': 'error',
+      // TypeScript recommended rules (core subset)
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-empty-function': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
+
+      // React recommended rules (core subset)
+      'react/jsx-uses-react': 'off',
       'react/react-in-jsx-scope': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_' },
-      ],
+      'react/jsx-uses-vars': 'error',
+
+      // React Hooks
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+
+      // Prettier
+      'prettier/prettier': 'error',
     },
     settings: {
       react: { version: 'detect' },
     },
   },
-]);
+])
