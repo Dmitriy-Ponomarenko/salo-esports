@@ -140,5 +140,13 @@ export default tseslint.config(
   {
     files: ['**/*.config.ts', '**/*.config.js', '**/*.d.ts'],
     extends: [tseslint.configs.disableTypeChecked],
+  },
+  {
+    // ignore unsafe rule errors in React components (styles imports etc.)
+    files: ['src/**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+    },
   }
 );
