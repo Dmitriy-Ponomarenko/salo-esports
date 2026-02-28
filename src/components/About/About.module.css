@@ -1,5 +1,5 @@
 .about {
-  padding: 100px 20px;
+  padding: 60px 15px;
   background-color: var(--panel-color);
 }
 
@@ -10,15 +10,31 @@
 }
 
 .aboutTitle {
-  font-size: 2.5rem;
-  margin-bottom: 30px;
+  font-size: 2rem;
+  margin-bottom: 20px;
   color: var(--text-main);
 }
 
 .aboutText {
   color: var(--text-muted);
-  font-size: 1.1rem;
-  line-height: 1.8;
+  font-size: 1rem;
+  line-height: 1.6;
   max-width: 800px;
   margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .about {
+    padding: 80px 20px;
+  }
+
+  .aboutTitle {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+  }
+
+  .aboutText {
+    font-size: 1.1rem;
+    line-height: 1.8;
+  }
 }

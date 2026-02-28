@@ -5,7 +5,7 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  width: 100%; /* Гарантируем ширину */
+  width: 100%;
 }
 
 .container {
@@ -14,15 +14,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  position: relative; /* Для правильного позиционирования лого */
+  padding: 0 15px;
 }
 
 .logo {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: var(--text-main);
-  z-index: 1002; /* Логотип выше меню */
+  z-index: 1002;
   display: flex;
   align-items: center;
 }
@@ -32,32 +31,31 @@
   margin-left: 5px;
 }
 
-/* --- МОБИЛЬНОЕ МЕНЮ (Модальное окно) --- */
 .nav {
   display: flex;
   flex-direction: column;
   position: fixed;
   top: 0;
-  right: -100%; /* Скрыто */
-  width: 100%; /* НА ВЕСЬ ЭКРАН */
+  right: -100%;
+  width: 100%;
   height: 100vh;
   background-color: var(--panel-color);
   padding: 80px 20px;
   transition: right 0.4s ease-in-out;
   gap: 30px;
-  align-items: center; /* ЦЕНТРОВКА ССЫЛОК */
-  justify-content: center; /* ЦЕНТРОВКА ПО ВЕРТИКАЛИ */
-  z-index: 1001; /* Ниже лого, но выше контента */
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
 }
 
 .navOpen {
-  right: 0; /* Открыто */
+  right: 0;
 }
 
 .navLink {
-  color: var(--text-main); /* Сделал белым для контраста в меню */
+  color: var(--text-main);
   text-decoration: none;
-  font-size: 1.5rem; /* Крупнее для пальцев */
+  font-size: 1.3rem;
   font-weight: 500;
   transition: color 0.3s;
 }
@@ -74,64 +72,44 @@
   font-weight: bold;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .btnLogin:hover {
   background-color: #7c3aed;
 }
 
-/* --- КНОПКА ГАМБУРГЕР --- */
 .menuButton {
   display: block;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 1002; /* Поверх всего */
-  padding: 10px;
+  z-index: 1002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  color: var(--text-main);
+  padding: 0;
 }
 
-.hamburger {
-  display: block;
-  width: 25px;
-  height: 2px;
-  background: var(--text-main);
-  position: relative;
-  transition: background 0.3s;
+.menuIcon {
+  width: 100%;
+  height: 100%;
+  stroke: white;
+  transition: transform 0.3s ease;
 }
 
-.hamburger::before,
-.hamburger::after {
-  content: '';
-  position: absolute;
-  width: 25px;
-  height: 2px;
-  background: var(--text-main);
-  transition: transform 0.3s;
-}
-
-.hamburger::before {
-  top: -8px;
-}
-.hamburger::after {
-  top: 8px;
-}
-
-/* Анимация в крестик */
-.open {
-  background: transparent;
-}
-.open::before {
-  transform: rotate(45deg);
-  top: 0;
-}
-.open::after {
-  transform: rotate(-45deg);
-  top: 0;
-}
-
-/* --- ДЕСКТОП (Планшеты и ПК) --- */
 @media (min-width: 768px) {
+  .container {
+    padding: 0 20px;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+  }
+
   .menuButton {
     display: none;
   }
@@ -144,13 +122,14 @@
     background-color: transparent;
     padding: 0;
     gap: 20px;
-    justify-content: flex-end; /* Ссылки справа */
+    justify-content: flex-end;
     box-shadow: none;
+    right: 0;
   }
 
   .navLink {
     font-size: 1rem;
-    color: var(--text-muted); /* Вернули цвет muted для десктопа */
+    color: var(--text-muted);
   }
 
   .btnLogin {

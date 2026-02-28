@@ -3,14 +3,12 @@ import React, { useState } from 'react';
 import styles from './Header.module.css';
 
 const Header: React.FC = () => {
-  // Стейт для мобильного меню
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Закрываем меню при клике на ссылку (для якорей)
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
@@ -22,18 +20,16 @@ const Header: React.FC = () => {
           SALO<span>ESPORTS</span>
         </div>
 
-        {/* Кнопка-гамбургер (видна только на мобильных) */}
         <button
           className={styles.menuButton}
           onClick={toggleMenu}
           aria-label="Toggle menu"
         >
-          <span
-            className={`${styles.hamburger} ${isMenuOpen ? styles.open : ''}`}
-          ></span>
+          <svg className={styles.menuIcon} width="24" height="24">
+            <use xlinkHref="/icons.svg#icon-menu" />
+          </svg>
         </button>
 
-        {/* Навигация (меняет стили в зависимости от isMenuOpen) */}
         <nav className={`${styles.nav} ${isMenuOpen ? styles.navOpen : ''}`}>
           <a href="#features" className={styles.navLink} onClick={closeMenu}>
             Функционал

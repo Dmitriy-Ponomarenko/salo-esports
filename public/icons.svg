@@ -1,6 +1,10 @@
 <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;"
   version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
-    <symbol></symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24">
+      <path d="M4 18L20 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      <path d="M4 12L20 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      <path d="M4 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </symbol>
   </defs>
 </svg>
