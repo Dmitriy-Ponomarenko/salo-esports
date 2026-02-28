@@ -1,0 +1,40 @@
+.landingPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero {
+  padding: 100px 20px;
+  text-align: center;
+  background: radial-gradient(
+    circle at center,
+    #1a1a2e 0%,
+    var(--bg-color) 70%
+  );
+}
+
+.heroTitle {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.heroTitle span {
+  color: var(--secondary-color);
+}
+
+.heroSubtitle {
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto 30px;
+  font-size: 1.2rem;
+}
+
+.btnPrimary {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin: 0 10px;
+}
