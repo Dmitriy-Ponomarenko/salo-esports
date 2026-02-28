@@ -1,8 +1,9 @@
 // workers/middlewares/jwtAuth.ts
 
 import jwt from '@tsndr/cloudflare-worker-jwt';
-import { IRequest } from 'itty-router';
-import { JwtPayload } from '@/shared/types/jwt';
+import type { IRequest } from 'itty-router';
+
+import type { JwtPayload } from '@/shared/types/jwt';
 
 export default async function auth(
   request: IRequest,
@@ -12,12 +13,12 @@ export default async function auth(
   const urlPathname = new URL(request.url).pathname;
   if (urlPathname.includes('private')) {
     const token = getJwt(request);
-    if (!token) {
+    if (token === null || token === undefined || token === '') {
       return new Response('No authorization token provided', { status: 401 });
     }
     try {
       const payload = (await verifyJwt(token, env)) as JwtPayload;
-      request.user = {
+      request['user'] = {
         user_id: payload.user_id,
       };
     } catch {
@@ -38,12 +39,19 @@ export async function verifyJwt(
   }
 
   const decoded = jwt.decode(token);
-  if (!decoded) {
+  if (decoded === null || decoded === undefined) {
     return new Response('Invalid JWT format', { status: 401 });
   }
 
   const payload = decoded.payload as JwtPayload;
-  if (!payload || !payload?.user_id || !payload?.exp) {
+  if (
+    payload === undefined ||
+    payload === null ||
+    payload.user_id === undefined ||
+    payload.user_id === null ||
+    payload.exp === undefined ||
+    payload.exp === null
+  ) {
     return new Response('Invalid token payload', { status: 401 });
   }
   if (!checkTokenExpired(payload)) {
@@ -64,9 +72,13 @@ function checkTokenExpired(payload: JwtPayload): boolean {
 
 function getJwt(request: Request): string | null {
   const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('JWT ')) {
+  if (authHeader === null || !authHeader.startsWith('JWT ')) {
     return null;
   }
 
-  return authHeader.split(' ')[1].trim();
+  const parts = authHeader.split(' ');
+  const token = parts[1];
+  return token !== undefined && token !== null && token !== ''
+    ? token.trim()
+    : null;
 }

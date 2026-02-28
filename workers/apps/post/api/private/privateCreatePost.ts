@@ -1,9 +1,13 @@
-import { handleError } from '@/workers/apps/common/handleError';
 import { OpenAPIRoute } from 'chanfana';
+import type { IRequest } from 'itty-router';
 import { z } from 'zod';
-import { IRequest } from 'itty-router';
+
+import type {
+  CreatePostRequest,
+  CreatePostResponse,
+} from '@/shared/types/post';
+import { handleError } from '@/workers/apps/common/handleError';
 import { createPost } from '@/workers/apps/post/services/post';
-import { CreatePostRequest, CreatePostResponse } from '@/shared/types/post';
 
 const REQUEST_BODY_SCHEMA = z.object({
   type: z.enum(['need', 'offer', 'question'], {
@@ -27,7 +31,7 @@ const RESPONSE_SCHEMA = z.object({
 }) satisfies z.ZodType<CreatePostResponse>;
 
 export class PrivateCreatePostAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     tags: ['Posts'],
     summary: 'Create a new post',
     description: 'Create a new post by an authenticated user',
@@ -57,39 +61,44 @@ export class PrivateCreatePostAPI extends OpenAPIRoute {
         description: 'Bad request - Invalid input data',
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
-      // Get user info from JWT middleware (should be set by auth middleware)
-      const userId = request.user?.user_id;
+      const userObj = (request as Record<string, unknown>)['user'];
 
-      if (!userId) {
-        return new Response(
-          JSON.stringify({ error: 'User not authenticated' }),
-          { status: 401, headers: { 'Content-Type': 'application/json' } }
+      let userId: number | undefined;
+      if (
+        typeof userObj === 'object' &&
+        userObj !== null &&
+        'user_id' in userObj
+      ) {
+        userId = Number(userObj.user_id);
+      }
+
+      if (userId === undefined || Number.isNaN(userId)) {
+        return Response.json(
+          { error: 'User not authenticated' },
+          { status: 401 }
         );
       }
 
-      // Get and validate request data
-      const data = await this.getValidatedData<typeof this.schema>();
-      const postData = { ...(data.body as unknown as CreatePostRequest) };
+      const { body: postData } =
+        await this.getValidatedData<typeof this.schema>();
 
-      // Create the post
       const post = await createPost(env, {
         authorId: userId,
         type: postData.type,
         text: postData.text,
       });
 
-      // Return the created post
       const response: CreatePostResponse = {
         id: post.id,
         author_id: post.author_id,
         type: post.type,
         text: post.text,
-        created_at: post.created_at.getTime(),
-        updated_at: post.updated_at.getTime(),
+        created_at: post.created_at,
+        updated_at: post.updated_at,
       };
 
       return Response.json(response, { status: 201 });

@@ -1,9 +1,11 @@
 // workers/apps/apiRouter.ts
 
 import { fromIttyRouter } from 'chanfana';
-import { registerAppRoutes } from './appUrls';
 import { Router } from 'itty-router';
-import { RouterOpenApiType, RouterTypeItty } from '../types';
+
+import type { RouterOpenApiType, RouterTypeItty } from '../types';
+
+import { registerAppRoutes } from './appUrls';
 
 const _router: RouterTypeItty = Router();
 const router: RouterOpenApiType = fromIttyRouter(_router);

@@ -1,14 +1,14 @@
-import { handleError } from '@/workers/apps/common/handleError';
 import { OpenAPIRoute } from 'chanfana';
+import type { IRequest } from 'itty-router';
 import { z } from 'zod';
-import { IRequest } from 'itty-router';
 
-import { createUser, getUserByEmail } from '@/workers/apps/auth/services/user';
-import {
+import type {
   RegisterUserRequest,
   RegisterUserResponse,
 } from '@/shared/types/register';
 import { UserAlreadyExistsException } from '@/workers/apps/auth/exceptions/user';
+import { createUser, getUserByEmail } from '@/workers/apps/auth/services/user';
+import { handleError } from '@/workers/apps/common/handleError';
 
 const REQUEST_BODY_SCHEMA = z.object({
   email: z.string(),
@@ -23,7 +23,7 @@ const RESPONSE_SCHEMA = z.object({
 }) satisfies z.ZodType<RegisterUserResponse>;
 
 export class PrivateRegisterAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     request: {
       body: {
         content: {
@@ -33,8 +33,9 @@ export class PrivateRegisterAPI extends OpenAPIRoute {
         },
       },
     },
-    response: {
+    responses: {
       '200': {
+        description: 'Successful response with access token',
         content: {
           'application/json': {
             schema: RESPONSE_SCHEMA,
@@ -42,33 +43,28 @@ export class PrivateRegisterAPI extends OpenAPIRoute {
         },
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(_request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
-      const data = await this.getValidatedData<typeof this.schema>();
-      const userData = { ...(data.body as unknown as RegisterUserRequest) };
-
-      const cfData = (request as any).cf;
-
-      console.log('Full Cloudflare data:', JSON.stringify(cfData, null, 2));
+      const { body: userData } =
+        await this.getValidatedData<typeof this.schema>();
 
       let user = await getUserByEmail(env, userData.email);
       if (user) {
         throw new UserAlreadyExistsException();
-      } else if (!user) {
-        user = await createUser(env, userData);
-        console.log('User created with data:', {
-          id: user.id,
-          email: user.email,
-        });
       }
+
+      user = await createUser(env, userData);
+      if (!user) {
+        throw new Error('Failed to create user');
+      }
+
       return Response.json({
         id: user.id,
         email: user.email,
       });
     } catch (error) {
-      console.error('Register API error:', error);
       return handleError(error);
     }
   }

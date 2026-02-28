@@ -1,6 +1,6 @@
 // workers/middlewares/serveAssets.ts
 
-import { NextFunction } from '../middlewareComposer';
+import type { NextFunction } from '../middlewareComposer';
 
 export async function serveAssetsMiddleware(
   request: Request,
@@ -22,7 +22,8 @@ export async function serveAssetsMiddleware(
     const setCache = new Response(asstsResponse.body, asstsResponse);
     const contentType = asstsResponse.headers.get('content-type');
     const isCacheable =
-      contentType && cachebableContent.some(type => contentType.includes(type));
+      contentType !== null &&
+      cachebableContent.some(type => contentType.includes(type));
 
     if (isCacheable) {
       setCache.headers.set('cache-control', 'public, max-age=31536000');

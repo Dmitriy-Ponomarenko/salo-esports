@@ -1,7 +1,8 @@
-import { handleError } from '@/workers/apps/common/handleError';
 import { OpenAPIRoute } from 'chanfana';
+import type { IRequest } from 'itty-router';
 import { z } from 'zod';
-import { IRequest } from 'itty-router';
+
+import { handleError } from '@/workers/apps/common/handleError';
 import { getAllPosts } from '@/workers/apps/post/services/post';
 
 const RESPONSE_SCHEMA = z.object({
@@ -18,7 +19,7 @@ const RESPONSE_SCHEMA = z.object({
 });
 
 export class PublicGetAllPostsAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     tags: ['Posts'],
     summary: 'Get all posts',
     description: 'Fetch a list of posts with optional filtering and pagination',
@@ -79,9 +80,9 @@ export class PublicGetAllPostsAPI extends OpenAPIRoute {
         description: 'Bad Request - Invalid query parameters',
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
       // Parse query parameters
       const url = new URL(request.url);
@@ -96,7 +97,7 @@ export class PublicGetAllPostsAPI extends OpenAPIRoute {
       let user_id: number | undefined;
 
       // Validate page parameter
-      if (pageParam) {
+      if (pageParam !== null && pageParam !== '') {
         const parsedPage = parseInt(pageParam, 10);
         if (isNaN(parsedPage) || parsedPage < 1) {
           return new Response(
@@ -110,7 +111,7 @@ export class PublicGetAllPostsAPI extends OpenAPIRoute {
       }
 
       // Validate limit parameter
-      if (limitParam) {
+      if (limitParam !== null && limitParam !== '') {
         const parsedLimit = parseInt(limitParam, 10);
         if (isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > 100) {
           return new Response(
@@ -124,7 +125,7 @@ export class PublicGetAllPostsAPI extends OpenAPIRoute {
       }
 
       // Validate user_id parameter
-      if (userIdParam) {
+      if (userIdParam !== null && userIdParam !== '') {
         const parsedUserId = parseInt(userIdParam, 10);
         if (isNaN(parsedUserId) || parsedUserId < 1) {
           return new Response(
@@ -139,7 +140,8 @@ export class PublicGetAllPostsAPI extends OpenAPIRoute {
 
       // Validate type parameter
       if (
-        typeParam &&
+        typeParam !== null &&
+        typeParam !== '' &&
         !['need', 'offer', 'question'].includes(typeParam.toLowerCase())
       ) {
         return new Response(
@@ -153,8 +155,11 @@ export class PublicGetAllPostsAPI extends OpenAPIRoute {
 
       // Get posts from database with filters
       const filters = {
-        type: typeParam?.toLowerCase(),
-        user_id,
+        type:
+          typeParam !== null && typeParam !== ''
+            ? typeParam.toLowerCase()
+            : undefined,
+        user_id: user_id !== undefined ? user_id : undefined,
         page,
         limit,
       };

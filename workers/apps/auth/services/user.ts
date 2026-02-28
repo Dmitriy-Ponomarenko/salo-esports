@@ -1,9 +1,10 @@
-import { User } from '@/shared/types/user';
-import { RegisterUserRequest } from '@/shared/types/register';
+import { eq } from 'drizzle-orm';
+
+import type { RegisterUserRequest } from '@/shared/types/register';
+import type { User } from '@/shared/types/user';
 import { InvalidCredentialsException } from '@/workers/apps/auth/exceptions/user';
 import { initDbConnect } from '@/workers/db';
 import { userSchema } from '@/workers/db/schema/user';
-import { eq } from 'drizzle-orm';
 
 export async function createUser(env: Env, userData: RegisterUserRequest) {
   const db = initDbConnect(env);
@@ -43,7 +44,10 @@ export async function verifyUser(env: Env, email: string, password: string) {
   return user;
 }
 
-export async function getUserById(env: Env, id: number): Promise<User> {
+export async function getUserById(
+  env: Env,
+  id: number
+): Promise<User | undefined> {
   const db = initDbConnect(env);
   const [user] = await db
     .select()

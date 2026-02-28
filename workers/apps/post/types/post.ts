@@ -1,4 +1,4 @@
-import { PostType } from '@/shared/types/post';
+import type { PostType } from '@/shared/types/post';
 
 export interface PostServiceParams {
   authorId: number;

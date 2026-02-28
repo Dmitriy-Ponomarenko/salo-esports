@@ -1,6 +1,7 @@
-import { JwtPayload, JwtTokens } from '@/shared/types/jwt';
-import { User } from '@/shared/types/user';
 import jwt from '@tsndr/cloudflare-worker-jwt';
+
+import type { JwtPayload, JwtTokens } from '@/shared/types/jwt';
+import type { User } from '@/shared/types/user';
 import {
   InvalidOrExpiredTokenException,
   NotCorrectTokenTypeException,

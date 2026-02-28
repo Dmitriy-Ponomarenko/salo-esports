@@ -5,9 +5,19 @@ export default defineConfig({
   out: './workers/db/migrations',
   dialect: 'sqlite',
   driver: 'd1-http',
-  dbCredentials: {
-    accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
-    databaseId: process.env.CLOUDFLARE_DATABASE_ID!,
-    token: process.env.CLOUDFLARE_D1_TOKEN!,
-  },
+  dbCredentials: (() => {
+    const accountId = process.env['CLOUDFLARE_ACCOUNT_ID'];
+    const databaseId = process.env['CLOUDFLARE_DATABASE_ID'];
+    const token = process.env['CLOUDFLARE_D1_TOKEN'];
+
+    if (!accountId || !databaseId || !token) {
+      throw new Error('Missing required D1 environment variables');
+    }
+
+    return {
+      accountId,
+      databaseId,
+      token,
+    };
+  })(),
 });
