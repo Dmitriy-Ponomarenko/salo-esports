@@ -3,11 +3,11 @@ import React from 'react';
 import styles from './Roster.module.css';
 
 const players = [
-  { name: 'CaptainName', role: 'Roamer', info: 'Shotcaller' },
-  { name: 'JunglerPro', role: 'Jungler', info: 'Tempo control' },
-  { name: 'MidMaster', role: 'Mid Lane', info: 'Map control' },
-  { name: 'GoldKing', role: 'Gold Lane', info: 'Damage dealer' },
-  { name: 'TopTank', role: 'EXP Lane', info: 'Frontliner' },
+  { name: 'грізлі', role: 'Roamer', info: 'Shotcaller' },
+  { name: 'GS JOKER', role: 'Jungler', info: 'Tempo control' },
+  { name: '爱|•Ⲩυⲕⲓ', role: 'Mid Lane', info: 'Map control' },
+  { name: 'BigPapaJone', role: 'Gold Lane', info: 'Damage dealer' },
+  { name: "GUJIN'", role: 'EXP Lane', info: 'Frontliner' },
 ];
 
 const Roster: React.FC = () => {
