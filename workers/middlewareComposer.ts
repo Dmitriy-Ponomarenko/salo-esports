@@ -27,6 +27,9 @@ export function composeMiddlewares(
         return apiHandler(req, env, ctx);
       }
       const middleware = middlewares[currentIndex];
+      if (!middleware) {
+        return apiHandler(req, env, ctx);
+      }
       currentIndex++;
 
       return middleware(req, env, ctx, executeMiddleware);

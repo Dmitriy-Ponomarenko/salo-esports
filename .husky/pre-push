@@ -1,0 +1,7 @@
+#!/bin/sh
+# Cross-platform pre-push: run checks via Node to avoid relying on bash availability.
+if command -v node >/dev/null 2>&1; then
+	node -e "const cp=require('child_process'); function run(cmd){const parts=cmd.split(' '); const res=cp.spawnSync(parts[0], parts.slice(1), {stdio:'inherit'}); if(res.status!==0) process.exit(res.status);} run('npm run check-all'); run('npm run test');"
+else
+	npm run check-all && npm run test
+fi

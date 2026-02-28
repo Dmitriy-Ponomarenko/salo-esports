@@ -1,6 +1,7 @@
 // workers/apps/docsRouter.ts
 
 import { Router } from 'itty-router';
+
 import apiRouter from './apiRouter';
 
 const docsRouter = Router();
@@ -30,17 +31,31 @@ const API_APPS = {
   // },
 };
 
+// Simplified OpenAPI document type (minimal subset we care about)
+type OpenAPISchema = {
+  openapi?: string;
+  info?: {
+    title?: string;
+    version?: string;
+    description?: string;
+    [key: string]: unknown;
+  };
+  paths?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+
 // Cache for generated schemas
-const schemaCache = new Map<string, any>();
+const schemaCache = new Map<string, OpenAPISchema>();
 
 // Generate OpenAPI schema for a specific app
-async function generateAppSchema(appName: string): Promise<any> {
-  if (schemaCache.has(appName)) {
-    return schemaCache.get(appName);
+async function generateAppSchema(appName: string): Promise<OpenAPISchema> {
+  const cached = schemaCache.get(appName);
+  if (cached) {
+    return cached;
   }
 
   const app = API_APPS[appName as keyof typeof API_APPS];
-  if (!app) {
+  if (app === undefined) {
     throw new Error(`App ${appName} not found`);
   }
 
@@ -53,18 +68,18 @@ async function generateAppSchema(appName: string): Promise<any> {
       },
     });
 
-    const schemaResponse = await apiRouter.fetch(
+    const schemaResponse = (await apiRouter.fetch(
       mockRequest,
       {} as Env,
       {} as ExecutionContext
-    );
+    )) as Response;
 
-    if (schemaResponse && schemaResponse.ok) {
-      const completeSchema = await schemaResponse.json();
+    if (schemaResponse.ok) {
+      const raw: unknown = await schemaResponse.json();
+      const completeSchema = raw as OpenAPISchema;
 
       // Filter the schema to only include routes for this app
-      const filteredSchema = {
-        ...completeSchema,
+      const filteredSchema: OpenAPISchema = {
         info: {
           title: app.title,
           version: '1.0.0',
@@ -82,7 +97,7 @@ async function generateAppSchema(appName: string): Promise<any> {
   }
 
   // Fallback to manual schema if extraction fails
-  const fallbackSchema = {
+  const fallbackSchema: OpenAPISchema = {
     openapi: '3.0.0',
     info: {
       title: app.title,
@@ -113,11 +128,12 @@ async function generateAppSchema(appName: string): Promise<any> {
 }
 
 // Filter paths based on the app
-function filterPathsByApp(paths: any, appName: string): any {
+type PathMap = Record<string, unknown>;
+function filterPathsByApp(paths: PathMap, appName: string): PathMap {
   const app = API_APPS[appName as keyof typeof API_APPS];
-  if (!app) return {};
+  if (app === undefined) return {};
 
-  const filteredPaths: any = {};
+  const filteredPaths: PathMap = {};
 
   for (const [path, pathItem] of Object.entries(paths)) {
     if (appName === 'auth') {
@@ -158,6 +174,13 @@ docsRouter.get('/docs/:app/openapi.json', async (request: Request) => {
   const appName = pathSegments[2]; // /docs/{app}/openapi.json
 
   try {
+    if (appName === undefined || appName === '') {
+      return new Response(JSON.stringify({ error: 'App name is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const schema = await generateAppSchema(appName);
 
     return new Response(JSON.stringify(schema, null, 2), {
@@ -186,7 +209,7 @@ docsRouter.get('/docs/:app', (request: Request) => {
   const appName = pathSegments[2]; // /docs/{app}
 
   const app = API_APPS[appName as keyof typeof API_APPS];
-  if (!app) {
+  if (app === undefined) {
     return new Response('App not found', { status: 404 });
   }
 

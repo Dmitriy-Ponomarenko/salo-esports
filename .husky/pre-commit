@@ -1,0 +1,8 @@
+#!/bin/sh
+# Cross-platform pre-commit hook: prefer running via Node to avoid relying on bash.
+# This avoids `/usr/bin/env: `bash`: No such file or directory` errors on some Windows setups.
+if command -v node >/dev/null 2>&1; then
+	node -e "const cp=require('child_process'); const res=cp.spawnSync('npx', ['lint-staged'], {stdio:'inherit'}); process.exit(res.status||0);"
+else
+	npx lint-staged
+fi

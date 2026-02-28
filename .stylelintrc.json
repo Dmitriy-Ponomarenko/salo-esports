@@ -29,11 +29,5 @@
     "max-empty-lines": 1,
     "no-missing-end-of-source-newline": true
   },
-  "ignoreFiles": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/*.js",
-    "**/*.ts",
-    "**/*.tsx"
-  ]
+  "ignoreFiles": ["**/node_modules/**", "**/dist/**", "**/*.js", "**/*.ts", "**/*.tsx"]
 }

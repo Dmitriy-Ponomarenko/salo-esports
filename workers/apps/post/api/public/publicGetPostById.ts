@@ -1,8 +1,10 @@
 import { OpenAPIRoute } from 'chanfana';
+import type { IRequest } from 'itty-router';
 import { z } from 'zod';
-import { IRequest } from 'itty-router';
-import { getPostByIdWithUserInfo } from '../../services/post';
+
 import { handleError } from '@/workers/apps/common/handleError';
+
+import { getPostByIdWithUserInfo } from '../../services/post';
 
 const PostResponseSchema = z.object({
   id: z.number(),
@@ -13,7 +15,7 @@ const PostResponseSchema = z.object({
 });
 
 export class PublicGetPostByIdAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     tags: ['Posts'],
     summary: 'Get a single post by ID',
     parameters: [
@@ -51,13 +53,25 @@ export class PublicGetPostByIdAPI extends OpenAPIRoute {
         },
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
       const url = new URL(request.url);
       const pathSegments = url.pathname.split('/');
       const idParam = pathSegments[pathSegments.length - 1];
+
+      if (idParam === undefined || idParam === null || idParam === '') {
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid post ID. Path parameter is missing.',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+      }
 
       const postId = parseInt(idParam);
 

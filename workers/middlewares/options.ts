@@ -1,6 +1,6 @@
 // workers/middlewares/options.ts
 
-import { NextFunction } from '../middlewareComposer';
+import type { NextFunction } from '../middlewareComposer';
 
 export async function optionsMiddleware(
   request: Request,

@@ -1,8 +1,8 @@
-import { handleError } from '@/workers/apps/common/handleError';
 import { OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
 
 import { refreshAccessToken } from '@/workers/apps/auth/services/jwt';
+import { handleError } from '@/workers/apps/common/handleError';
 
 const REQUEST_BODY_SCHEMA = z.object({
   refresh: z.string(),
@@ -13,7 +13,7 @@ const RESPONSE_SCHEMA = z.object({
 });
 
 export class PrivateRefreshAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     request: {
       body: {
         content: {
@@ -23,8 +23,9 @@ export class PrivateRefreshAPI extends OpenAPIRoute {
         },
       },
     },
-    response: {
+    responses: {
       '200': {
+        description: 'Successful response with access token',
         content: {
           'application/json': {
             schema: RESPONSE_SCHEMA,
@@ -32,17 +33,16 @@ export class PrivateRefreshAPI extends OpenAPIRoute {
         },
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(_request: Request, env: Env, _ctx: ExecutionContext) {
+  override async handle(_request: Request, env: Env, _ctx: ExecutionContext) {
     try {
-      const data = await this.getValidatedData<typeof this.schema>();
-      const { refresh } = data.body;
-      const access_token = await refreshAccessToken(env, refresh);
+      const { body } = await this.getValidatedData<typeof this.schema>();
+      const { refresh } = body;
 
-      return Response.json({
-        access_token: access_token,
-      });
+      const access = await refreshAccessToken(env, refresh);
+
+      return Response.json({ access });
     } catch (error) {
       return handleError(error);
     }

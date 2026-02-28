@@ -1,8 +1,10 @@
 import { OpenAPIRoute } from 'chanfana';
+import type { IRequest } from 'itty-router';
 import { z } from 'zod';
-import { IRequest } from 'itty-router';
-import { getUserPosts } from '../../services/post';
+
 import { handleError } from '@/workers/apps/common/handleError';
+
+import { getUserPosts } from '../../services/post';
 
 const RESPONSE_SCHEMA = z.object({
   posts: z.array(
@@ -19,7 +21,7 @@ const RESPONSE_SCHEMA = z.object({
 });
 
 export class PublicGetUserPostsAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     tags: ['Posts'],
     summary: 'Get all posts by a specific user',
     description:
@@ -85,14 +87,31 @@ export class PublicGetUserPostsAPI extends OpenAPIRoute {
         description: "Not Found - User ID doesn't exist",
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
       // Get user ID from URL
       const url = new URL(request.url);
       const pathSegments = url.pathname.split('/');
       const userIdParam = pathSegments[pathSegments.indexOf('users') + 1];
+
+      if (
+        userIdParam === undefined ||
+        userIdParam === null ||
+        userIdParam === ''
+      ) {
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid user ID. Must be a positive integer.',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
       const userId = parseInt(userIdParam);
 
       if (isNaN(userId) || userId < 1) {
@@ -117,7 +136,7 @@ export class PublicGetUserPostsAPI extends OpenAPIRoute {
       let limit = 50;
 
       // Validate page parameter
-      if (pageParam) {
+      if (pageParam !== null && pageParam !== '') {
         const parsedPage = parseInt(pageParam, 10);
         if (isNaN(parsedPage) || parsedPage < 1) {
           return new Response(
@@ -131,7 +150,7 @@ export class PublicGetUserPostsAPI extends OpenAPIRoute {
       }
 
       // Validate limit parameter
-      if (limitParam) {
+      if (limitParam !== null && limitParam !== '') {
         const parsedLimit = parseInt(limitParam, 10);
         if (isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > 100) {
           return new Response(
@@ -146,7 +165,8 @@ export class PublicGetUserPostsAPI extends OpenAPIRoute {
 
       // Validate type parameter
       if (
-        typeParam &&
+        typeParam !== null &&
+        typeParam !== '' &&
         !['need', 'offer', 'question'].includes(typeParam.toLowerCase())
       ) {
         return new Response(
@@ -160,7 +180,10 @@ export class PublicGetUserPostsAPI extends OpenAPIRoute {
 
       // Get posts from database with filters
       const filters = {
-        type: typeParam?.toLowerCase(),
+        type:
+          typeParam !== null && typeParam !== ''
+            ? typeParam.toLowerCase()
+            : undefined,
         page,
         limit,
       };
@@ -174,8 +197,8 @@ export class PublicGetUserPostsAPI extends OpenAPIRoute {
           user_id: post.user_id,
           type: post.type,
           text: post.text,
-          created_at: post.created_at.getTime(),
-          updated_at: post.updated_at.getTime(),
+          created_at: post.created_at,
+          updated_at: post.updated_at,
         })),
         total,
       };

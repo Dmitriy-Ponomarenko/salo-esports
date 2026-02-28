@@ -1,6 +1,6 @@
 // workers/apps/types.ts
 
-import { RouterOpenApiType } from '../types';
+import type { RouterOpenApiType } from '../types';
 
 export type RegisterAppRoutes = (
   router: RouterOpenApiType,

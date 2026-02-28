@@ -2,7 +2,7 @@
 
 import { registerAuthRoutes } from './auth/urls';
 import { registerPostRoutes } from './post/urls';
-import { RegisterAppRoutes } from './types';
+import type { RegisterAppRoutes } from './types';
 
 export const registerAppRoutes: RegisterAppRoutes = (
   router,

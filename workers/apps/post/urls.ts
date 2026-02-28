@@ -1,21 +1,23 @@
-import { RouterOpenApiType } from '@/workers/types';
-import { RegisterAppRoutes } from '../types';
-import {
-  PublicGetAllPostsAPI,
-  PublicGetPostByIdAPI,
-  PublicGetUserPostsAPI,
-} from './api/public';
+import auth from '@/workers/middlewares/jwtAuth';
+import type { RouterOpenApiType } from '@/workers/types';
+
+import type { RegisterAppRoutes } from '../types';
+
 import {
   PrivateCreatePostAPI,
   PrivateUpdatePostAPI,
   PrivateDeletePostAPI,
 } from './api/private';
-import auth from '@/workers/middlewares/jwtAuth';
+import {
+  PublicGetAllPostsAPI,
+  PublicGetPostByIdAPI,
+  PublicGetUserPostsAPI,
+} from './api/public';
 
 export const registerPostRoutes: RegisterAppRoutes = (
   router: RouterOpenApiType,
-  urlPrefix = null
-) => {
+  urlPrefix: string | null = null
+): void => {
   // Public routes
   router.get(`${urlPrefix}/public/posts`, PublicGetAllPostsAPI);
   router.get(`${urlPrefix}/public/posts/:id`, PublicGetPostByIdAPI);
@@ -25,16 +27,28 @@ export const registerPostRoutes: RegisterAppRoutes = (
   router.post(
     `${urlPrefix}/private/create-post`,
     auth,
-    PrivateCreatePostAPI as any
+    PrivateCreatePostAPI as unknown as (
+      request: Request,
+      env: Env,
+      ctx: ExecutionContext
+    ) => Promise<Response>
   );
   router.put(
     `${urlPrefix}/private/posts/:id`,
     auth,
-    PrivateUpdatePostAPI as any
+    PrivateUpdatePostAPI as unknown as (
+      request: Request,
+      env: Env,
+      ctx: ExecutionContext
+    ) => Promise<Response>
   );
   router.delete(
     `${urlPrefix}/private/posts/:id`,
     auth,
-    PrivateDeletePostAPI as any
+    PrivateDeletePostAPI as unknown as (
+      request: Request,
+      env: Env,
+      ctx: ExecutionContext
+    ) => Promise<Response>
   );
 };

@@ -1,8 +1,10 @@
 import { OpenAPIRoute } from 'chanfana';
+import type { IRequest } from 'itty-router';
 import { z } from 'zod';
-import { IRequest } from 'itty-router';
-import { handleError } from '@/workers/apps/common/handleError';
+
 import { getUserById } from '@/workers/apps/auth/services/user';
+import { handleError } from '@/workers/apps/common/handleError';
+
 import { UserNotFoundException } from '../../exceptions/user';
 
 // Response schema for public user info (excluding sensitive data)
@@ -22,7 +24,7 @@ const PUBLIC_USER_INFO_SCHEMA = z.object({
 });
 
 export class PublicGetUserByIdAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     tags: ['Authentication'],
     summary: 'Get public user information by ID',
     description:
@@ -55,11 +57,11 @@ export class PublicGetUserByIdAPI extends OpenAPIRoute {
         description: 'Invalid user ID',
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
-      const userId = Number(request.params?.id);
+      const userId = Number(request.params?.['id']);
 
       if (isNaN(userId) || userId <= 0) {
         return new Response(JSON.stringify({ error: 'Invalid user ID' }), {
@@ -80,7 +82,7 @@ export class PublicGetUserByIdAPI extends OpenAPIRoute {
         full_name: user.full_name,
         avatar_url: user.avatar_url,
         language: user.language,
-        created_at: user.created_at.getTime(),
+        created_at: user.created_at,
       };
 
       return Response.json(publicUserInfo);

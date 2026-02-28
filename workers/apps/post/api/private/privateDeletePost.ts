@@ -1,11 +1,13 @@
 import { OpenAPIRoute } from 'chanfana';
-import { IRequest } from 'itty-router';
-import { deletePost } from '../../services/post';
+import type { IRequest } from 'itty-router';
+
 import { handleError } from '@/workers/apps/common/handleError';
+
 import { PostNotFoundException } from '../../exceptions/post';
+import { deletePost } from '../../services/post';
 
 export class PrivateDeletePostAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     tags: ['Posts'],
     summary: 'Delete a post',
     description: 'Delete a post. Only the post owner can delete it.',
@@ -36,12 +38,11 @@ export class PrivateDeletePostAPI extends OpenAPIRoute {
         description: "Not Found - Post ID doesn't exist",
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
-      // Get post ID from URL
-      const postId = Number(request.params?.id);
+      const postId = Number(request.params?.['id']);
 
       if (isNaN(postId) || postId < 1) {
         return new Response(
@@ -55,9 +56,15 @@ export class PrivateDeletePostAPI extends OpenAPIRoute {
         );
       }
 
-      // Get authenticated user ID from request context
-      const userId = request.user?.user_id;
-      if (!userId) {
+      const userObj = (request as Record<string, unknown>)['user'];
+
+      let userId: number | undefined;
+
+      if (typeof userObj === 'object' && userObj !== null) {
+        userId = (userObj as { user_id: number })['user_id'];
+      }
+
+      if (userId === undefined) {
         return new Response(
           JSON.stringify({ error: 'Authentication required' }),
           {
@@ -67,7 +74,6 @@ export class PrivateDeletePostAPI extends OpenAPIRoute {
         );
       }
 
-      // Delete the post
       await deletePost(env, postId, userId);
 
       return new Response(null, { status: 204 });

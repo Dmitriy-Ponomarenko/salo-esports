@@ -1,9 +1,11 @@
 import { OpenAPIRoute } from 'chanfana';
-import { z } from 'zod';
-import { IRequest } from 'itty-router';
+import type { IRequest } from 'itty-router';
 import { nanoid } from 'nanoid';
-import { updateUserAvatar } from '../../services/user';
+import { z } from 'zod';
+
 import { handleError } from '@/workers/apps/common/handleError';
+
+import { updateUserAvatar } from '../../services/user';
 
 const UploadAvatarResponseSchema = z.object({
   success: z.boolean(),
@@ -11,7 +13,7 @@ const UploadAvatarResponseSchema = z.object({
 });
 
 export class PrivateUploadUserAvatarAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     tags: ['Authentication'],
     summary: 'Upload user avatar',
     description:
@@ -57,13 +59,17 @@ export class PrivateUploadUserAvatarAPI extends OpenAPIRoute {
         description: 'Payload Too Large - File size exceeds 1MB limit',
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
       // Get authenticated user ID from request context
-      const userId = Number(request.user?.user_id);
-      if (!userId) {
+      const userObj = (request as Record<string, unknown>)['user'];
+      const userId =
+        typeof userObj === 'object' && userObj !== null
+          ? Number((userObj as Record<string, unknown>)['user_id'])
+          : undefined;
+      if (typeof userId !== 'number' || userId <= 0) {
         return new Response(
           JSON.stringify({ error: 'Authentication required' }),
           {
@@ -74,24 +80,29 @@ export class PrivateUploadUserAvatarAPI extends OpenAPIRoute {
       }
 
       // Validate content type
-      const contentType = request.headers.get('content-type') || '';
+      const contentType = request.headers.get('content-type');
+
+      if (contentType === null) {
+        return new Response(
+          JSON.stringify({ error: 'Missing Content-Type header' }),
+          { status: 400 }
+        );
+      }
+
       if (!contentType.startsWith('multipart/form-data')) {
         return new Response(
           JSON.stringify({
             error: 'Expected multipart/form-data content type',
           }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          }
+          { status: 400 }
         );
       }
 
       // Parse form data
       const form = await request.formData();
-      const file = form.get('file') as File | null;
+      const file = form.get('file');
 
-      if (!file) {
+      if (!(file instanceof File)) {
         return new Response(JSON.stringify({ error: 'No file provided' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -131,11 +142,11 @@ export class PrivateUploadUserAvatarAPI extends OpenAPIRoute {
       }
 
       // Generate unique filename
-      const ext = file.type.split('/')[1] || 'png';
+      const ext = file.type.split('/')[1] ?? 'png';
       const filename = nanoid() + '.' + ext;
 
       // Generate public URL via Cloudflare Images
-      const publicUrl = `https://welcome-way.dkogabayev.workers.dev/cdn/${filename}`;
+      const publicUrl = `https://workers.dev/cdn/${filename}`;
 
       // Update user avatar URL in database
       await updateUserAvatar(env, userId, publicUrl);

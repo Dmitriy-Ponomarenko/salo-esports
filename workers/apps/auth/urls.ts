@@ -1,6 +1,8 @@
 import auth from '@/workers/middlewares/jwtAuth';
-import { RouterOpenApiType } from '@/workers/types';
-import { RegisterAppRoutes } from '../types';
+import type { RouterOpenApiType } from '@/workers/types';
+
+import type { RegisterAppRoutes } from '../types';
+
 import {
   PrivateLoginAPI,
   PrivateRegisterAPI,
@@ -12,8 +14,8 @@ import { PublicGetUserByIdAPI } from './api/public';
 
 export const registerAuthRoutes: RegisterAppRoutes = (
   router: RouterOpenApiType,
-  urlPrefix = null
-) => {
+  urlPrefix: string | null = null
+): void => {
   // Public routes
   router.get(`${urlPrefix}/public/users/:id`, PublicGetUserByIdAPI);
 
@@ -26,11 +28,19 @@ export const registerAuthRoutes: RegisterAppRoutes = (
   router.get(
     `${urlPrefix}/private/auth/me`,
     auth,
-    PrivateGetUserInfoAPI as any
+    PrivateGetUserInfoAPI as unknown as (
+      request: Request,
+      env: Env,
+      ctx: ExecutionContext
+    ) => Promise<Response>
   );
   router.post(
     `${urlPrefix}/private/auth/upload-avatar`,
     auth,
-    PrivateUploadUserAvatarAPI as any
+    PrivateUploadUserAvatarAPI as unknown as (
+      request: Request,
+      env: Env,
+      ctx: ExecutionContext
+    ) => Promise<Response>
   );
 };

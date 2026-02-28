@@ -1,13 +1,18 @@
 import { OpenAPIRoute } from 'chanfana';
+import type { IRequest } from 'itty-router';
 import { z } from 'zod';
-import { IRequest } from 'itty-router';
-import { updatePost } from '../../services/post';
+
 import { handleError } from '@/workers/apps/common/handleError';
+
 import { PostNotFoundException } from '../../exceptions/post';
+import { updatePost } from '../../services/post';
 
 const UpdatePostRequestSchema = z.object({
-  type: z.enum(['need', 'offer', 'question']).optional(),
-  text: z.string().min(1).max(1000).optional(),
+  type: z
+    .enum(['need', 'offer', 'question'])
+    .optional()
+    .describe('Post type (need, offer, or question)'),
+  text: z.string().min(1).max(1000).optional().describe('Post text content'),
 });
 
 const UpdatePostResponseSchema = z.object({
@@ -19,7 +24,7 @@ const UpdatePostResponseSchema = z.object({
 });
 
 export class PrivateUpdatePostAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     tags: ['Posts'],
     summary: 'Update a post',
     description: "Update a post's content. Only the post owner can update it.",
@@ -36,10 +41,12 @@ export class PrivateUpdatePostAPI extends OpenAPIRoute {
         },
       },
     ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: UpdatePostRequestSchema,
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: UpdatePostRequestSchema,
+          },
         },
       },
     },
@@ -65,12 +72,16 @@ export class PrivateUpdatePostAPI extends OpenAPIRoute {
         description: "Not Found - Post ID doesn't exist",
       },
     },
-  } as any;
+  } satisfies OpenAPIRoute['schema'];
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
-      // Get post ID from URL
-      const postId = Number(request.params?.id);
+      // 1. Get post ID from URL
+      const postIdRaw = request.params?.['id'];
+      if (postIdRaw === undefined || postIdRaw === null || postIdRaw === '') {
+        throw new Error('Post ID is required');
+      }
+      const postId = Number(postIdRaw);
 
       if (isNaN(postId) || postId < 1) {
         return new Response(
@@ -84,9 +95,17 @@ export class PrivateUpdatePostAPI extends OpenAPIRoute {
         );
       }
 
-      // Get authenticated user ID from request context
-      const userId = request.user?.user_id;
-      if (!userId) {
+      // 2. Get authenticated user ID from request context
+      const userObj = (request as Record<string, unknown>)['user'];
+      let userId: number | undefined;
+
+      if (typeof userObj === 'object' && userObj !== null) {
+        // Explicitly cast to fix 'no-unsafe-assignment'
+        userId = (userObj as Record<string, unknown>)['user_id'] as number;
+      }
+
+      // Explicit check for strict-boolean-expressions
+      if (userId === undefined) {
         return new Response(
           JSON.stringify({ error: 'Authentication required' }),
           {
@@ -96,7 +115,7 @@ export class PrivateUpdatePostAPI extends OpenAPIRoute {
         );
       }
 
-      // Parse and validate request body
+      // 3. Parse and validate request body
       const body = await request.json();
       const validation = UpdatePostRequestSchema.safeParse(body);
 
@@ -115,8 +134,8 @@ export class PrivateUpdatePostAPI extends OpenAPIRoute {
 
       const updates = validation.data;
 
-      // Check if at least one field is provided
-      if (!updates.type && !updates.text) {
+      // 4. Check if at least one field is provided (Explicitly check against undefined)
+      if (updates.type === undefined && updates.text === undefined) {
         return new Response(
           JSON.stringify({
             error: 'At least one field (type or text) must be provided',
@@ -128,15 +147,29 @@ export class PrivateUpdatePostAPI extends OpenAPIRoute {
         );
       }
 
-      // Update the post
-      const updatedPost = await updatePost(env, postId, userId, updates);
+      // 5. Update the post
+      // Explicitly check for undefined to satisfy strict-boolean-expressions
+      const updatedPostResult = await updatePost(env, postId, userId, {
+        ...(updates.type !== undefined && { type: updates.type }),
+        ...(updates.text !== undefined && { text: updates.text }),
+      });
+
+      // 6. Handle potentially 'any' typed response from updatePost
+      // Cast the result to the expected structure to fix no-unsafe-assignment
+      const post = updatedPostResult as {
+        id: number;
+        type: string;
+        text: string;
+        created_at: number;
+        updated_at: number;
+      };
 
       const response = {
-        id: updatedPost.id,
-        type: updatedPost.type,
-        text: updatedPost.text,
-        created_at: updatedPost.created_at.getTime(),
-        updated_at: updatedPost.updated_at.getTime(),
+        id: post.id,
+        type: post.type,
+        text: post.text,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
       };
 
       return Response.json(response, { status: 200 });

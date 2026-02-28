@@ -1,9 +1,12 @@
-import { handleError } from '@/workers/apps/common/handleError';
 import { OpenAPIRoute } from 'chanfana';
+import type { IRequest } from 'itty-router';
 import { z } from 'zod';
-import { IRequest } from 'itty-router';
+
+import type { AuthenticatedRequest } from '@/shared/types/auth';
+import type { UserInfo } from '@/shared/types/user';
 import { getUserById } from '@/workers/apps/auth/services/user';
-import { UserInfo } from '@/shared/types/user';
+import { handleError } from '@/workers/apps/common/handleError';
+
 import { UserNotFoundException } from '../../exceptions/user';
 
 const RESPONSE_SCHEMA = z.object({
@@ -17,7 +20,7 @@ const RESPONSE_SCHEMA = z.object({
 }) satisfies z.ZodType<UserInfo>;
 
 export class PrivateGetUserInfoAPI extends OpenAPIRoute {
-  schema = {
+  override schema = {
     security: [{ BearerAuth: [] }],
     response: {
       content: {
@@ -26,9 +29,9 @@ export class PrivateGetUserInfoAPI extends OpenAPIRoute {
     },
   };
 
-  async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
+  override async handle(request: IRequest, env: Env, _ctx: ExecutionContext) {
     try {
-      const userId = Number(request.user?.user_id);
+      const userId = (request as unknown as AuthenticatedRequest).userId;
       const user = await getUserById(env, userId);
 
       if (!user) {
@@ -41,8 +44,14 @@ export class PrivateGetUserInfoAPI extends OpenAPIRoute {
         email: user.email,
         avatar_url: user.avatar_url,
         language: user.language,
-        created_at: user.created_at.getTime(),
-        updated_at: user.updated_at.getTime(),
+        created_at:
+          typeof user.created_at === 'number'
+            ? user.created_at
+            : new Date(user.created_at).getTime(),
+        updated_at:
+          typeof user.updated_at === 'number'
+            ? user.updated_at
+            : new Date(user.updated_at).getTime(),
       };
 
       return Response.json(userInfo);
