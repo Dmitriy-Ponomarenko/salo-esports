@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 import styles from './NotFoundPage.module.css';
 
@@ -25,10 +26,10 @@ const NotFoundPage: React.FC = () => {
           не найдена.
         </p>
 
-        <a href="/" className={styles.button}>
+        <Link to="/" className={styles.button}>
           <span className={styles.buttonText}>Вернуться на базу</span>
           <span className={styles.buttonIcon}>🚀</span>
-        </a>
+        </Link>
       </div>
 
       <svg

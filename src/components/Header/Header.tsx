@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import styles from './Header.module.css';
 
@@ -17,7 +18,9 @@ const Header: React.FC = () => {
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.logo}>
-          SALO<span>ESPORTS</span>
+          <Link to="/">
+            SALO<span>ESPORTS</span>
+          </Link>
         </div>
 
         <button
@@ -37,9 +40,9 @@ const Header: React.FC = () => {
           <a href="#roster" className={styles.navLink} onClick={closeMenu}>
             Состав
           </a>
-          <button className={styles.btnLogin} onClick={closeMenu}>
+          <a href="/login" className={styles.btnLogin}>
             Войти
-          </button>
+          </a>
         </nav>
       </div>
     </header>

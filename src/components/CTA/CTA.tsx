@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 import styles from './CTA.module.css';
 
@@ -10,7 +11,9 @@ const CTA: React.FC = () => {
         <p className={styles.ctaText}>
           Присоединяйся к нашей платформе и начни тренироваться как профи.
         </p>
-        <button className={styles.btnPrimary}>Зарегистрироваться</button>
+        <Link to="register" className={styles.btnPrimary}>
+          Зарегистрироваться
+        </Link>
       </div>
     </section>
   );

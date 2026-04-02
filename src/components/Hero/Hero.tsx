@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 import styles from './Hero.module.css';
 
@@ -14,8 +15,12 @@ const Hero: React.FC = () => {
           достижения новый высот в одном месте.
         </p>
         <div className={styles.heroBtns}>
-          <button className={styles.btnPrimary}>Начать использование</button>
-          <button className={styles.btnSecondary}>Узнать больше</button>
+          <Link to="/register" className={styles.btnPrimary}>
+            Начать использование
+          </Link>
+          <a href="#features" className={styles.btnSecondary}>
+            Узнать больше
+          </a>
         </div>
       </div>
     </section>
