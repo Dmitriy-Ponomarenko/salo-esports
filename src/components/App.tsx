@@ -14,8 +14,8 @@ export const App = () => {
       <Route path="/" element={<LandingPage />} />
 
       {/* Authentication routes */}
-      <Route path="/signin" element={<SignInPage />} />
-      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/login" element={<SignInPage />} />
+      <Route path="/register" element={<SignUpPage />} />
 
       {/* Protected routes */}
       <Route path="/profile/:id" element={<ProfilePage />} />
